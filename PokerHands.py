@@ -20,9 +20,12 @@ s : spades
 
 Format:
     Place suit first, then number for card arrays
+    suit_array is alphabetical
 
 Notes:
     Use better return statements (like quads)
+    Goal: Try to use any number of cards (preflop, flop, turn, river)
+    Problem: Indexing a set number of cards; Solution: Instead of sending in cards array, consider suit array
 '''
 
 
@@ -61,6 +64,24 @@ def cards_number_array(card1, card2, card3, card4, card5, card6, card7):
     return array
 
 
+# assign values of 1 or more for suit cards in play and zeros for cards not in play
+def cards_suit_array(card1, card2, card3, card4, card5, card6, card7):
+    allcards = [card1, card2, card3, card4, card5, card6, card7]
+    array = [0] * 4
+    for y in range(0, 7):
+        if allcards[y][0] == 'c':
+            array[0] += 1
+        if allcards[y][0] == 'd':
+            array[1] += 1
+        if allcards[y][0] == 'h':
+            array[2] += 1
+        if allcards[y][0] == 's':
+            array[3] += 1
+       # array[allcards[y][0]-1] += 1
+    print(array)
+    return array
+
+
 def get_card(card_number):
     if card_number == 0 or card_number == 13:
         return "Ace"
@@ -90,7 +111,6 @@ def get_card(card_number):
         return "King"
 
 
-# incomplete
 # consider how we will compare high cards between hands
 def check_high_card(array):
     i = 1
@@ -180,7 +200,6 @@ def check_flush(array):
 
 
 def check_fullhouse(array):
-    # fullhouse = False
     have_trips = False
     have_pair = False
     for x in range(1, 14):
@@ -219,7 +238,7 @@ def check_straight_flush(array, have_straight, have_flush, suit):
                 if array[x][1] == 1:
                     suited_array[array[x][1] + 12] = 1
         if check_straight(suited_array):
-            print("You have a straight flush!")
+
             return True
         else:
             return False
@@ -228,14 +247,31 @@ def check_straight_flush(array, have_straight, have_flush, suit):
 # trying to consider best way to check hand strength
 def check_hand_strength():
     # 9 possible hands
-    possible_hands = ['High Card', 'Pair', 'Two Pair', 'Trips', 'Straight', 'Flush', 'Full House', 'Quads', 'Straight Flush']
-    current_hand = possible_hands[0]
-    while True:
-        if not check_pair(number_array):
-            break
-    # check_high_card(number_array)
-        break
-    #return current_hand
+    possible_hands = ['High Card', 'Pair', 'Two Pair', 'Trips', 'Straight', 'Flush', 'Full House', 'Quads',
+                      'Straight Flush']
+    current_hand = None
+    if check_high_card(number_array):
+        current_hand = possible_hands[0]
+    if check_pair(number_array):
+        current_hand = possible_hands[1]
+    if check_two_pair(number_array):
+        current_hand = possible_hands[2]
+    if check_trips(number_array):
+        current_hand = possible_hands[3]
+    straight_boolean = check_straight(number_array)
+    if straight_boolean:
+        current_hand = possible_hands[4]
+    flush_boolean, flush_suit = check_flush(cards_array)
+    if check_flush(cards_array)[0]:
+        current_hand = possible_hands[5]
+    if check_fullhouse(number_array):
+        current_hand = possible_hands[6]
+    if check_quads(number_array):
+        current_hand = possible_hands[7]
+    if check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit):
+        current_hand = possible_hands[8]
+        print("You have a straight flush!")
+    return current_hand
 
 
 # Cards in play:
@@ -246,16 +282,19 @@ flop2 = community_card('d', 11)
 flop3 = community_card('d', 12)
 turn = community_card('d', 13)
 river = community_card('d', 1)
+# river = community_card(None, None)
 cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
 number_array = cards_number_array(preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card,
                                   river.card)
+suit_array = cards_suit_array(preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card)
+preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
 
 
 def main():
     # Functions to check hand combinations:
 
     check_hand_strength()
-    preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
+'''
     check_high_card(number_array)
     check_pair(number_array)
     check_two_pair(number_array)
@@ -265,7 +304,7 @@ def main():
     check_quads(number_array)
     check_fullhouse(number_array)
     check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit)
-    return
+'''
 
 
 if __name__ == "__main__":
