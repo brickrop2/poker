@@ -4,25 +4,26 @@ c : clubs
 d : diamonds
 h : hearts
 s : spades
-1 : ace
-2 : two
-3 : three
-4 : four
-5 : five
-6 : six
-7 : seven
-8 : eight
-9 : nine
-10 : ten
-11 : jack
-12 : queen
-13 : king
+0, 13 : ace
+1 : two
+2 : three
+3 : four
+4 : five
+5 : six
+6 : seven
+7 : eight
+8 : nine
+9 : ten
+10 : jack
+11 : queen
+12 : king
 
 Format:
     Place suit first, then number for card arrays
     suit_array is alphabetical
 
 Notes:
+    right "get" functions if check function is true**
     Consolidate cards_array** Done
     Use better return statements (like quads)** Done
     Important** remove None value from a list without removing the 0 value **solution to below**
@@ -68,22 +69,6 @@ def cards_number_array(all_cards):
     return array
 
 
-# assign values of 1 or more for suit cards in play and zeros for cards not in play
-def cards_suit_array(all_cards):
-    array = [0] * 4
-    for y in range(0, 7):
-        if all_cards[y][0] == 'c':
-            array[0] += 1
-        elif all_cards[y][0] == 'd':
-            array[1] += 1
-        elif all_cards[y][0] == 'h':
-            array[2] += 1
-        elif all_cards[y][0] == 's':
-            array[3] += 1
-    print(array)
-    return array
-
-
 def get_card(card_number):
     if card_number == 0 or card_number == 13:
         return "Ace"
@@ -124,10 +109,6 @@ def check_high_card(array):
             if i > 5:
                 break
     print(high_card)
-  # print(high_card["rank5"])
-       # have_high_card = False
-       # if have_high_card:
-           # print("You have a high card!")
     return True
 
 
@@ -177,20 +158,45 @@ def check_straight(array):
     return straight
 
 
-def check_flush(array):
-    for x in range(0, 7):
-        number = 1
-        flush = False
-        for y in range(0, 7):
-            if array[x][0] == array[y][0] and x != y:
-                number += 1
-            if number == 5:
-                print("You have a flush!")
-                flush = True
-                break
-        if flush:
-            return True, array[x][0]
+# assign values of 1 or more for suit cards in play and zeros for cards not in play, returns true if suit >= 5:
+def check_flush(all_cards):
+    array = [0] * 4
+    suits = ['c', 'd', 'h', 's']
+    for y in range(0, 7):
+        if all_cards[y][0] == 'c':
+            array[0] += 1
+        elif all_cards[y][0] == 'd':
+            array[1] += 1
+        elif all_cards[y][0] == 'h':
+            array[2] += 1
+        elif all_cards[y][0] == 's':
+            array[3] += 1
+    print(array)
+    for x in range(0, 4):
+        if array[x] >= 5:
+            current_suit = suits[x]
+            return True, current_suit
     return False, None
+
+
+# returns the cards for the flush:
+def get_cards_flush(array, suit):
+    suited_array = [0] * 14
+    for x in range(0, 7):
+        if array[x][0] == suit:
+            suited_array[array[x][1]-1] = 1
+            if array[x][1] == 1:
+                suited_array[13] = 1
+    i = 1
+    high_card = {}
+    for y in range(13, 0, -1):
+        if suited_array[y] == 1:
+            high_card["rank{0}".format(i)] = y
+            i += 1
+            if i > 5:
+                print(i)
+                break
+    return high_card
 
 
 def check_fullhouse(array):
@@ -253,6 +259,7 @@ def check_hand_strength():
         current_hand = possible_hands[4]
     flush_boolean, flush_suit = check_flush(cards_array)
     if check_flush(cards_array)[0]:
+        get_cards_flush(cards_array, flush_suit)
         current_hand = possible_hands[5]
     if check_fullhouse(number_array):
         current_hand = possible_hands[6]
@@ -270,31 +277,18 @@ preflop2 = preflop('c', 9)
 flop1 = community_card('d', 10)
 flop2 = community_card('d', 11)
 flop3 = community_card('d', 12)
-turn = community_card('d', 13)
-river = community_card('d', 1)
+turn = community_card('d', 1)
+river = community_card('d', 13)
 # river = community_card(None, None)
 cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
 # send cards_array into a function, return the array while eliminating None values, and include index # of cards
 number_array = cards_number_array(cards_array)
-suit_array = cards_suit_array(cards_array)
 preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
 
 
 def main():
     # Functions to check hand combinations:
-
     check_hand_strength()
-'''
-    check_high_card(number_array)
-    check_pair(number_array)
-    check_two_pair(number_array)
-    check_trips(number_array)
-    straight_boolean = check_straight(number_array)
-    flush_boolean, flush_suit = check_flush(cards_array)
-    check_quads(number_array)
-    check_fullhouse(number_array)
-    check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit)
-'''
 
 
 if __name__ == "__main__":
@@ -305,7 +299,74 @@ if __name__ == "__main__":
 
 
 
+'''
+old code:
+
+# function to find flush
+def check_flush(array):
+    for x in range(0, 7):
+        number = 1
+        flush = False
+        for y in range(0, 7):
+            if array[x][0] == array[y][0] and x != y:
+                number += 1
+            if number == 5:
+                print("You have a flush!")
+                flush = True
+                break
+        if flush:
+            return True, array[x][0]
+    return False, None
+    
+# function call
+    flush_boolean, flush_suit = check_flush(cards_array)
+
+def check_flush(array):
+    flush_boolean, flush_suit = cards_suit_array(cards_array)
+    if flush_boolean:
+        suited_array = [0] * 14
+    # needs to cycle through all 7 cards, check suit, if correct suit, write number to suited array (for card number)
+        for x in range(0, 7):
+            if array[x][0] == flush_suit:
+                suited_array[x] = array[x][1]
+                print(suited_array[x])
+        i = 1
+        high_card = {}
+        for y in range(13, 0, -1):
+            if suited_array[y] == 1:
+                high_card["rank{0}".format(i)] = y
+                i += 1
+                if i > 5:
+                    break
+        print(high_card)
+    return flush_boolean, flush_suit
 
 
-
-
+def cards_suit_array(all_cards):
+    array = [0] * 4
+    suits = ['c', 'd', 'h', 's']
+    for x in range(0, 7):
+        if all_cards[x][0] == 'c':
+            array[0] += 1
+        elif all_cards[x][0] == 'd':
+            array[1] += 1
+        elif all_cards[x][0] == 'h':
+            array[2] += 1
+        elif all_cards[x][0] == 's':
+            array[3] += 1
+    for y in range(0, 4):
+        if array[y] >= 5:
+            current_suit = suits[y]
+            i = 1
+            high_card_suited = {}
+            for z in range(6, 0, -1):
+                if all_cards[z][0] == current_suit:
+                    high_card_suited["suited_rank{0}".format(i)] = all_cards[z][1]
+                    i += 1
+                    print("check")
+                    if i > 5:
+                        break
+    print(high_card_suited)
+    print(array)
+    return array
+'''
