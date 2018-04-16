@@ -23,7 +23,9 @@ Format:
     suit_array is alphabetical
 
 Notes:
+    Consolidate cards_array** Done
     Use better return statements (like quads)
+    Important** remove None value from a list without removing the 0 value **solution to below**
     Goal: Try to use any number of cards (preflop, flop, turn, river)
     Problem: Indexing a set number of cards; Solution: Instead of sending in cards array, consider suit array
 '''
@@ -54,30 +56,27 @@ def preflop_hand(suit1, num1, suit2, num2):
 
 
 # assign values of 1 or more for numerical cards in play and zeros for cards not in play
-def cards_number_array(card1, card2, card3, card4, card5, card6, card7):
-    allcards = [card1, card2, card3, card4, card5, card6, card7]
+def cards_number_array(all_cards):
     array = [0] * 14
     for y in range(0, 7):
-        array[allcards[y][1]-1] += 1
-        if allcards[y][1]-1 == 0:
+        array[all_cards[y][1] - 1] += 1
+        if all_cards[y][1]-1 == 0:
             array[13] += 1
     return array
 
 
 # assign values of 1 or more for suit cards in play and zeros for cards not in play
-def cards_suit_array(card1, card2, card3, card4, card5, card6, card7):
-    allcards = [card1, card2, card3, card4, card5, card6, card7]
+def cards_suit_array(all_cards):
     array = [0] * 4
     for y in range(0, 7):
-        if allcards[y][0] == 'c':
+        if all_cards[y][0] == 'c':
             array[0] += 1
-        if allcards[y][0] == 'd':
+        elif all_cards[y][0] == 'd':
             array[1] += 1
-        if allcards[y][0] == 'h':
+        elif all_cards[y][0] == 'h':
             array[2] += 1
-        if allcards[y][0] == 's':
+        elif all_cards[y][0] == 's':
             array[3] += 1
-       # array[allcards[y][0]-1] += 1
     print(array)
     return array
 
@@ -135,9 +134,7 @@ def check_pair(array):
         if array[x] == 2:
             pair = True
             break
-    if pair:
-        print("You have a pair!")
-    return True
+    return pair
 
 
 def check_two_pair(array):
@@ -149,9 +146,7 @@ def check_two_pair(array):
         if number == 2:
             two_pair = True
             break
-    if two_pair:
-        print("You have two pair!")
-    return True
+    return two_pair
 
 
 def check_trips(array):
@@ -160,9 +155,7 @@ def check_trips(array):
         if array[x] == 3:
             trips = True
             break
-    if trips:
-        print("You have a trips!")
-    return True
+    return trips
 
 
 def check_straight(array):
@@ -178,9 +171,7 @@ def check_straight(array):
             if number == 5:
                 straight = True
                 break
-    if straight:
-        print("You have a straight!")
-        return True
+    return straight
 
 
 def check_flush(array):
@@ -196,7 +187,7 @@ def check_flush(array):
                 break
         if flush:
             return True, array[x][0]
-    return False, 0
+    return False, None
 
 
 def check_fullhouse(array):
@@ -237,11 +228,7 @@ def check_straight_flush(array, have_straight, have_flush, suit):
                 suited_array[array[x][1]-1] = 1
                 if array[x][1] == 1:
                     suited_array[array[x][1] + 12] = 1
-        if check_straight(suited_array):
-
-            return True
-        else:
-            return False
+        return check_straight(suited_array)
 
 
 # trying to consider best way to check hand strength
@@ -284,9 +271,8 @@ turn = community_card('d', 13)
 river = community_card('d', 1)
 # river = community_card(None, None)
 cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
-number_array = cards_number_array(preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card,
-                                  river.card)
-suit_array = cards_suit_array(preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card)
+number_array = cards_number_array(cards_array)
+suit_array = cards_suit_array(cards_array)
 preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
 
 
