@@ -24,8 +24,11 @@ Format:
 
 Notes:
     Consolidate cards_array** Done
-    Use better return statements (like quads)
+    Use better return statements (like quads)** Done
     Important** remove None value from a list without removing the 0 value **solution to below**
+    ex: >>> L = [0, 23, 234, 89, None, 0, 35, 9]
+    [x for x in L if x is not None]
+    [0, 23, 234, 89, 0, 35, 9]
     Goal: Try to use any number of cards (preflop, flop, turn, river)
     Problem: Indexing a set number of cards; Solution: Instead of sending in cards array, consider suit array
 '''
@@ -271,6 +274,7 @@ turn = community_card('d', 13)
 river = community_card('d', 1)
 # river = community_card(None, None)
 cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
+# send cards_array into a function, return the array while eliminating None values, and include index # of cards
 number_array = cards_number_array(cards_array)
 suit_array = cards_suit_array(cards_array)
 preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
