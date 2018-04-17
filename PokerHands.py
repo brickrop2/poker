@@ -20,18 +20,20 @@ s : spades
 
 Format:
     Place suit first, then number for card arrays
-    suit_array is alphabetical
+    suits are alphabetical
+
+To do list:
+    Show the 5 best cards with the type of hand
+    Accept two hands as input and then compare the two
+    Build GUI to facilitate hand comparison
+    Include percentages to show hand strength from current community board
 
 Notes:
-    right "get" functions if check function is true**
+    Write "get" functions if check function is true**
     Consolidate cards_array** Done
     Use better return statements (like quads)** Done
-    Important** remove None value from a list without removing the 0 value **solution to below**
-    ex: >>> L = [0, 23, 234, 89, None, 0, 35, 9]
-    [x for x in L if x is not None]
-    [0, 23, 234, 89, 0, 35, 9]
-    Goal: Try to use any number of cards (preflop, flop, turn, river)
-    Problem: Indexing a set number of cards; Solution: Instead of sending in cards array, consider suit array
+    Remove None value from a list without removing the 0 value **Done
+    Goal: Try to use any number of cards (preflop, flop, turn, river)** Done
 '''
 
 
@@ -50,20 +52,24 @@ class preflop:
         self.card = suit, num
 
 
-def preflop_hand(suit1, num1, suit2, num2):
-    if suit1 == suit2:
-        print("You are suited!")
-    if num1 == num2:
-        print("You are paired!")
-    if num1 == num2 + 1 or num1 == num2 - 1:
-        print("You are connected!")
+def possible_cards(all_cards):
+    index = -1
+    array_length = 6
+    while index < array_length and all_cards:
+        index += 1
+        if all_cards[index][1] is None:
+            del all_cards[index]
+            array_length -= 1
+            index -= 1
+    return all_cards, index + 1
 
 
 # assign values of 1 or more for numerical cards in play and zeros for cards not in play
-def cards_number_array(all_cards):
+def cards_number_array(all_cards, index):
     array = [0] * 14
-    for y in range(0, 7):
+    for y in range(0, index):
         array[all_cards[y][1] - 1] += 1
+        # need index value from possible cards function
         if all_cards[y][1]-1 == 0:
             array[13] += 1
     return array
@@ -108,7 +114,6 @@ def check_high_card(array):
             i += 1
             if i > 5:
                 break
-    print(high_card)
     return True
 
 
@@ -159,10 +164,10 @@ def check_straight(array):
 
 
 # assign values of 1 or more for suit cards in play and zeros for cards not in play, returns true if suit >= 5:
-def check_flush(all_cards):
+def check_flush(all_cards, index):
     array = [0] * 4
     suits = ['c', 'd', 'h', 's']
-    for y in range(0, 7):
+    for y in range(0, index):
         if all_cards[y][0] == 'c':
             array[0] += 1
         elif all_cards[y][0] == 'd':
@@ -171,7 +176,6 @@ def check_flush(all_cards):
             array[2] += 1
         elif all_cards[y][0] == 's':
             array[3] += 1
-    print(array)
     for x in range(0, 4):
         if array[x] >= 5:
             current_suit = suits[x]
@@ -180,9 +184,9 @@ def check_flush(all_cards):
 
 
 # returns the cards for the flush:
-def get_cards_flush(array, suit):
+def get_cards_flush(array, suit, index):
     suited_array = [0] * 14
-    for x in range(0, 7):
+    for x in range(0, index):
         if array[x][0] == suit:
             suited_array[array[x][1]-1] = 1
             if array[x][1] == 1:
@@ -194,7 +198,6 @@ def get_cards_flush(array, suit):
             high_card["rank{0}".format(i)] = y
             i += 1
             if i > 5:
-                print(i)
                 break
     return high_card
 
@@ -228,11 +231,11 @@ def check_quads(array):
     return quads
 
 
-def check_straight_flush(array, have_straight, have_flush, suit):
+def check_straight_flush(array, have_straight, have_flush, suit, index):
     if have_straight and have_flush:
         # straight_flush = False
         suited_array = [0]*14
-        for x in range(0, 7):
+        for x in range(0, index):
             if array[x][0] == suit:
                 suited_array[array[x][1]-1] = 1
                 if array[x][1] == 1:
@@ -257,33 +260,36 @@ def check_hand_strength():
     straight_boolean = check_straight(number_array)
     if straight_boolean:
         current_hand = possible_hands[4]
-    flush_boolean, flush_suit = check_flush(cards_array)
-    if check_flush(cards_array)[0]:
-        get_cards_flush(cards_array, flush_suit)
+    flush_boolean, flush_suit = check_flush(cards_array, number_of_cards)
+    if check_flush(cards_array, number_of_cards)[0]:
+        get_cards_flush(cards_array, flush_suit, number_of_cards)
         current_hand = possible_hands[5]
     if check_fullhouse(number_array):
         current_hand = possible_hands[6]
     if check_quads(number_array):
         current_hand = possible_hands[7]
-    if check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit):
+    if check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit, number_of_cards):
         current_hand = possible_hands[8]
-        print("You have a straight flush!")
+    print(current_hand)
     return current_hand
 
 
 # Cards in play:
 preflop1 = preflop('c', 1)
-preflop2 = preflop('c', 9)
-flop1 = community_card('d', 10)
+preflop2 = preflop('c', 1)
+flop1 = community_card('d', 9)
 flop2 = community_card('d', 11)
 flop3 = community_card('d', 12)
-turn = community_card('d', 1)
+turn = community_card('c', 10)
 river = community_card('d', 13)
 # river = community_card(None, None)
-cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
+possible_cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
+cards_list = list(possible_cards_array)
+
+
 # send cards_array into a function, return the array while eliminating None values, and include index # of cards
-number_array = cards_number_array(cards_array)
-preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
+cards_array, number_of_cards = possible_cards(cards_list)
+number_array = cards_number_array(cards_array, number_of_cards)
 
 
 def main():
@@ -295,13 +301,21 @@ if __name__ == "__main__":
     main()
 
 
-
-
-
-
 '''
 old code:
 
+
+# test functions
+def preflop_hand(suit1, num1, suit2, num2):
+    if suit1 == suit2:
+        print("You are suited!")
+    if num1 == num2:
+        print("You are paired!")
+    if num1 == num2 + 1 or num1 == num2 - 1:
+        print("You are connected!")
+preflop_hand(preflop1.card[0], preflop1.card[1], preflop2.card[0], preflop2.card[1])
+        
+        
 # function to find flush
 def check_flush(array):
     for x in range(0, 7):
