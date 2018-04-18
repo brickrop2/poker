@@ -4,26 +4,32 @@ c : clubs
 d : diamonds
 h : hearts
 s : spades
-0, 13 : ace
-1 : two
-2 : three
-3 : four
-4 : five
-5 : six
-6 : seven
-7 : eight
-8 : nine
-9 : ten
-10 : jack
-11 : queen
-12 : king
+1 : ace
+2 : two
+3 : three
+4 : four
+5 : five
+6 : six
+7 : seven
+8 : eight
+9 : nine
+10 : ten
+11 : jack
+12 : queen
+13 : king
+
+Numbers Array :
+index - 1 = card number
+eg: Two = 1
 
 Format:
     Place suit first, then number for card arrays
     suits are alphabetical
 
+================================================================================
 To do list:
     Show the 5 best cards with the type of hand
+        - Reference the original 7 cards for the final hand
     Accept two hands as input and then compare the two
     Build GUI to facilitate hand comparison
     Include percentages to show hand strength from current community board
@@ -34,6 +40,8 @@ Notes:
     Use better return statements (like quads)** Done
     Remove None value from a list without removing the 0 value **Done
     Goal: Try to use any number of cards (preflop, flop, turn, river)** Done
+================================================================================
+
 '''
 
 
@@ -50,29 +58,6 @@ class preflop:
         self.suit = ""
         self.num = 0
         self.card = suit, num
-
-
-def possible_cards(all_cards):
-    index = -1
-    array_length = 6
-    while index < array_length and all_cards:
-        index += 1
-        if all_cards[index][1] is None:
-            del all_cards[index]
-            array_length -= 1
-            index -= 1
-    return all_cards, index + 1
-
-
-# assign values of 1 or more for numerical cards in play and zeros for cards not in play
-def cards_number_array(all_cards, index):
-    array = [0] * 14
-    for y in range(0, index):
-        array[all_cards[y][1] - 1] += 1
-        # need index value from possible cards function
-        if all_cards[y][1]-1 == 0:
-            array[13] += 1
-    return array
 
 
 def get_card(card_number):
@@ -104,26 +89,61 @@ def get_card(card_number):
         return "King"
 
 
+# Remove None values from the cards array
+def possible_cards(all_cards):
+    # index = -1
+    index = 0
+    array_length = 6
+    while index < array_length and all_cards:
+        # index += 1
+        if all_cards[index][1] is None:
+            del all_cards[index]
+            array_length -= 1
+            index -= 1
+        index += 1
+    print(all_cards)
+    return all_cards, index + 1
+
+
+# assign values of 1 or more for numerical cards in play and zeros for cards not in play
+def cards_number_array(all_cards, index):
+    array = [0] * 14
+    for y in range(0, index):
+        array[all_cards[y][1] - 1] += 1
+        # Increment first and last element of array for aces
+        if all_cards[y][1] == 1:
+            array[13] += 1
+    return array
+
+
 # consider how we will compare high cards between hands
-def check_high_card(array):
+def check_high_card(array, index):
     i = 1
-    high_card = {}
+    # high_card = {}
+    high_card = []
     for x in range(13, 0, -1):
         if array[x] == 1:
-            high_card["rank{0}".format(i)] = x
+            # high_card["rank{0}".format(i)] = x
+            high_card.append(x)
             i += 1
-            if i > 5:
+            if i > index:
                 break
-    return True
+    return high_card
 
 
 def check_pair(array):
     pair = False
+    pair_card = None
     for x in range(1, 14):
         if array[x] == 2:
+            pair_card = x
             pair = True
             break
-    return pair
+    tie_breaker_cards = check_high_card(array, 3)
+    if pair:
+        print(get_card(pair_card))
+        print(tie_breaker_cards)
+    return pair, pair_card, tie_breaker_cards
 
 
 def check_two_pair(array):
@@ -135,7 +155,10 @@ def check_two_pair(array):
         if number == 2:
             two_pair = True
             break
-    return two_pair
+    tie_breaker_cards = check_high_card(array, 1)
+    if two_pair:
+        print(tie_breaker_cards)
+    return two_pair, tie_breaker_cards
 
 
 def check_trips(array):
@@ -144,7 +167,8 @@ def check_trips(array):
         if array[x] == 3:
             trips = True
             break
-    return trips
+    tie_breaker_cards = check_high_card(array, 1)
+    return trips, tie_breaker_cards
 
 
 def check_straight(array):
@@ -221,6 +245,7 @@ def check_fullhouse(array):
                 return False
 
 
+# Check hand for four of a kind
 def check_quads(array):
     quads = False
     for x in range(1, 14):
@@ -228,9 +253,11 @@ def check_quads(array):
             quads = True
             print("You have quads!")
             break
-    return quads
+    tie_breaker_cards = check_high_card(array, 1)
+    return quads, tie_breaker_cards
 
 
+# Check hand for straight flush
 def check_straight_flush(array, have_straight, have_flush, suit, index):
     if have_straight and have_flush:
         # straight_flush = False
@@ -243,19 +270,18 @@ def check_straight_flush(array, have_straight, have_flush, suit, index):
         return check_straight(suited_array)
 
 
-# trying to consider best way to check hand strength
+# Check for all possible hands and return the current best possible
 def check_hand_strength():
     # 9 possible hands
     possible_hands = ['High Card', 'Pair', 'Two Pair', 'Trips', 'Straight', 'Flush', 'Full House', 'Quads',
                       'Straight Flush']
-    current_hand = None
-    if check_high_card(number_array):
-        current_hand = possible_hands[0]
-    if check_pair(number_array):
+    check_high_card(number_array, 5)
+    current_hand = possible_hands[0]
+    if check_pair(number_array)[0]:
         current_hand = possible_hands[1]
-    if check_two_pair(number_array):
+    if check_two_pair(number_array)[0]:
         current_hand = possible_hands[2]
-    if check_trips(number_array):
+    if check_trips(number_array)[0]:
         current_hand = possible_hands[3]
     straight_boolean = check_straight(number_array)
     if straight_boolean:
@@ -266,7 +292,7 @@ def check_hand_strength():
         current_hand = possible_hands[5]
     if check_fullhouse(number_array):
         current_hand = possible_hands[6]
-    if check_quads(number_array):
+    if check_quads(number_array)[0]:
         current_hand = possible_hands[7]
     if check_straight_flush(cards_array, straight_boolean, flush_boolean, flush_suit, number_of_cards):
         current_hand = possible_hands[8]
@@ -275,9 +301,9 @@ def check_hand_strength():
 
 
 # Cards in play:
-preflop1 = preflop('c', 1)
-preflop2 = preflop('c', 1)
-flop1 = community_card('d', 9)
+preflop1 = preflop('c', 6)
+preflop2 = preflop('c', 2)
+flop1 = community_card('d', 6)
 flop2 = community_card('d', 11)
 flop3 = community_card('d', 12)
 turn = community_card('c', 10)
@@ -285,7 +311,6 @@ river = community_card('d', 13)
 # river = community_card(None, None)
 possible_cards_array = preflop1.card, preflop2.card, flop1.card, flop2.card, flop3.card, turn.card, river.card
 cards_list = list(possible_cards_array)
-
 
 # send cards_array into a function, return the array while eliminating None values, and include index # of cards
 cards_array, number_of_cards = possible_cards(cards_list)
